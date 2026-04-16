@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>S&D Dashboard</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+  <style>
+    body { background:#eef2f7; font-family:'Segoe UI'; }
+
+    .card {
+      border-radius:15px;
+      box-shadow:0 4px 15px rgba(0,0,0,0.05);
+      padding:10px;
+      background:#fff;
+    }
+
+    canvas {
+      width:100% !important;
+      height:260px !important;
+    }
+
+    .filter-card {
+      background: linear-gradient(135deg,#ffffff,#f8fbff);
+    }
+  </style>
+</head>
+
+<body class="p-3">
+
+<div class="container-fluid">
+
+<h4 class="mb-3">S&D Dashboard</h4>
+
+<!-- FILTER -->
+<div class="card filter-card p-3 mb-3">
+  <div class="row g-2">
+
+    <div class="col-md-3">
+      <input list="rsmList" id="rsm" class="form-control" placeholder="Select RSM">
+      <datalist id="rsmList"></datalist>
+    </div>
+
+    <div class="col-md-3">
+      <input list="asmList" id="asm" class="form-control" placeholder="Select ASM">
+      <datalist id="asmList"></datalist>
+    </div>
+
+    <div class="col-md-3">
+      <input list="soList" id="so" class="form-control" placeholder="Select SO">
+      <datalist id="soList"></datalist>
+    </div>
+
+    <div class="col-md-3">
+      <button class="btn btn-outline-dark w-100" onclick="clearFilters()">Reset</button>
+    </div>
+
+    <div class="col-md-3">
+      <label>From</label>
+      <input type="month" id="monthFrom" class="form-control">
+    </div>
+
+    <div class="col-md-3">
+      <label>To</label>
+      <input type="month" id="monthTo" class="form-control">
+    </div>
+
+  </div>
+</div>
+
+<!-- CHARTS -->
+<div class="row g-3">
+
+  <div class="col-md-6"><div class="card"><canvas id="ols"></canvas></div></div>
+  <div class="col-md-6"><div class="card"><canvas id="tc"></canvas></div></div>
+
+  <div class="col-md-6"><div class="card"><canvas id="pc"></canvas></div></div>
+  <div class="col-md-6"><div class="card"><canvas id="percent"></canvas></div></div>
+
+  <div class="col-md-6"><div class="card"><canvas id="ubo"></canvas></div></div>
+  <div class="col-md-6"><div class="card"><canvas id="ubop"></canvas></div></div>
+
+  <div class="col-md-6"><div class="card"><canvas id="secval"></canvas></div></div>
+  <div class="col-md-6"><div class="card"><canvas id="secvol"></canvas></div></div>
+
+  <div class="col-md-6"><div class="card"><canvas id="lpc"></canvas></div></div>
+
+</div>
+
+</div>
+
+<script>
+
+Chart.defaults.devicePixelRatio = 2; // 🔥 crisp charts
+
+const API = "https://opensheet.elk.sh/1IaCUbc4ZRlx8DPGRVghrVs1BNdFRGDQRoz76GweYZdA/Sheet1";
+
+let dataAll = [];
+let charts = {};
+
+const colors = {
+  ols:"#4e79a7",
+  tc:"#f28e2c",
+  pc:"#59a14f",
+  percent:"#7b6ee6",
+  ubo:"#e15759",
+  ubop:"#00a8a8",
+  secval:"#f1c40f",
+  secvol:"#8e6e53",
+  lpc:"#6f42c1"
+};
+
+function cleanNumber(val){
+  if(!val) return 0;
+  return parseFloat(val.toString().replace(/,/g,'')) || 0;
+}
+
+fetch(API)
+.then(res=>res.json())
+.then(data=>{
+  dataAll = data.map(r=>({
+    ...r,
+    date: parseDate(r["Month"])
+  })).filter(r=>r.date);
+
+  initFilters();
+  setDefault();
+  updateCharts();
+});
+
+function parseDate(val){
+  const [m,y]=val.split("-");
+  const map={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+  return new Date(2000+parseInt(y), map[m],1);
+}
+
+function format(d){
+  return d.toLocaleDateString('en-US',{month:'short',year:'2-digit'});
+}
+
+function initFilters(){
+  fill("rsm", uniq(dataAll.map(r=>r["Current RSM"])));
+
+  rsm.oninput=()=>{cascadeASM(); updateCharts();}
+  asm.oninput=()=>{cascadeSO(); updateCharts();}
+  so.oninput=updateCharts;
+  monthFrom.onchange=updateCharts;
+  monthTo.onchange=updateCharts;
+}
+
+function fill(id, arr){
+  document.getElementById(id+"List").innerHTML = arr.map(v=>`<option value="${v}">`).join("");
+}
+
+function uniq(a){return [...new Set(a)].filter(Boolean)}
+
+function cascadeASM(){
+  let f=dataAll.filter(r=>r["Current RSM"]==rsm.value);
+  fill("asm", uniq(f.map(r=>r["Current ASM"])));
+  asm.value=""; so.value="";
+}
+
+function cascadeSO(){
+  let f=dataAll.filter(r=>r["Current ASM"]==asm.value);
+  fill("so", uniq(f.map(r=>r["SO"])));
+  so.value="";
+}
+
+// DEFAULT LAST 13 MONTHS
+function setDefault(){
+  let sorted=dataAll.map(r=>r.date).sort((a,b)=>a-b);
+  let last=sorted.at(-1);
+
+  let from=new Date(last);
+  from.setMonth(from.getMonth()-12);
+
+  monthFrom.value=toInput(from);
+  monthTo.value=toInput(last);
+}
+
+function toInput(d){
+  return d.toISOString().slice(0,7);
+}
+
+function getMonthDate(val){
+  if(!val) return null;
+  let [y,m]=val.split("-");
+  return new Date(y, m-1, 1);
+}
+
+function getData(){
+  let from = getMonthDate(monthFrom.value);
+  let to = getMonthDate(monthTo.value);
+
+  return dataAll.filter(r=>{
+    return (
+      (!rsm.value || r["Current RSM"]==rsm.value) &&
+      (!asm.value || r["Current ASM"]==asm.value) &&
+      (!so.value || r["SO"]==so.value) &&
+      (!from || r.date >= from) &&
+      (!to || r.date <= to)
+    );
+  });
+}
+
+// AGGREGATE
+function aggregate(data){
+
+  let g={};
+
+  data.forEach(r=>{
+    let k=r.date.getTime();
+
+    if(!g[k]){
+      g[k]={date:r.date, TC:0, PC:0, ols:0, ubo:0, secval:0, secvol:0, tlsd:0};
+    }
+
+    g[k].TC += cleanNumber(r["TC"]);
+    g[k].PC += cleanNumber(r["PC"]);
+    g[k].ols += cleanNumber(r["No of Ols"]);
+    g[k].ubo += cleanNumber(r["UBO"]);
+    g[k].secval += cleanNumber(r["Sec Value"]);
+    g[k].secvol += cleanNumber(r["Sec Volume"]);
+    g[k].tlsd += cleanNumber(r["TLSD"]);
+  });
+
+  return Object.values(g).sort((a,b)=>a.date-b.date).map(x=>({
+
+    label:format(x.date),
+    tc:x.TC,
+    pc:x.PC,
+    ols:x.ols,
+    ubo:x.ubo,
+    percent: x.TC ? Math.round((x.PC/x.TC)*100) : 0,
+    ubop: x.ols ? Math.round((x.ubo/x.ols)*100) : 0,
+    secval:x.secval,
+    secvol:x.secvol,
+    lpc: x.PC ? Math.round(x.tlsd/x.PC) : 0
+
+  }));
+}
+
+// DRAW (CRISP)
+function draw(id,label,key,isPercent=false){
+
+  let data=aggregate(getData());
+
+  if(charts[id]) charts[id].destroy();
+
+  charts[id]=new Chart(document.getElementById(id),{
+    type:"line",
+    data:{
+      labels:data.map(x=>x.label),
+      datasets:[{
+        data:data.map(x=>x[key]),
+        borderColor:colors[id],
+        backgroundColor:colors[id]+"33",
+        fill:true,
+        tension:0.4,
+        borderWidth:3,
+        pointRadius:4
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+
+      plugins:{
+        legend:{display:false},
+        title:{
+          display:true,
+          text:label,
+          align:'start',
+          color:'#2c2c2c',
+          font:{size:14,weight:'bold'}
+        },
+        tooltip:{
+          callbacks:{
+            label:(ctx)=> isPercent? ctx.raw+"%" : ctx.raw
+          }
+        },
+        datalabels:{
+          align:'top',
+          color:'#333',
+          font:{weight:'600'},
+          formatter:v=> isPercent? v+"%" : v
+        }
+      }
+    },
+    plugins:[ChartDataLabels]
+  });
+}
+
+// UPDATE
+function updateCharts(){
+  draw("ols","No of Ols","ols");
+  draw("tc","TC","tc");
+  draw("pc","PC","pc");
+  draw("percent","PC%","percent",true);
+  draw("ubo","UBO","ubo");
+  draw("ubop","UBO %","ubop",true);
+  draw("secval","Sec Value","secval");
+  draw("secvol","Sec Volume","secvol");
+  draw("lpc","LPC","lpc");
+}
+
+function clearFilters(){
+  rsm.value="";
+  asm.value="";
+  so.value="";
+  setDefault();
+  updateCharts();
+}
+
+</script>
+
+</body>
+</html>
+ 
