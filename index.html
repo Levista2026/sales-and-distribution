@@ -237,13 +237,8 @@ function aggregate(data){
     ubop: x.ols ? Math.round((x.ubo/x.ols)*100) : 0,
     secval:x.secval,
     secvol:x.secvol,
-    lpc: x.PC ? Math.round(x.tlsd/x.PC) : 0
+    lpc: x.PC ? parseFloat((x.tlsd / x.PC).toFixed(1)) : 0
  
-Replace with below:
- 
-lpc: x.PC ? parseFloat((x.tlsd / x.PC).toFixed(1)) : 0
- 
-
   }));
 }
 
