@@ -238,6 +238,11 @@ function aggregate(data){
     secval:x.secval,
     secvol:x.secvol,
     lpc: x.PC ? Math.round(x.tlsd/x.PC) : 0
+ 
+Replace with below:
+ 
+lpc: x.PC ? parseFloat((x.tlsd / x.PC).toFixed(1)) : 0
+ 
 
   }));
 }
