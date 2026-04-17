@@ -162,23 +162,25 @@
       text-transform: uppercase;
     }
 
-    .form-control {
+    .form-control,
+    .form-select {
       min-height: 48px;
       border-radius: 14px;
       border: 1px solid var(--border);
-      background: #ffffff;
+      background-color: #ffffff;
       color: var(--title);
       font-size: 14px;
       box-shadow: none;
     }
 
-    .form-control::-webkit-calendar-picker-indicator {
-      opacity: 0.7;
-    }
-
-    .form-control:focus {
+    .form-control:focus,
+    .form-select:focus {
       border-color: rgba(31, 78, 121, 0.42);
       box-shadow: 0 0 0 4px rgba(31, 78, 121, 0.08);
+    }
+
+    .form-control::-webkit-calendar-picker-indicator {
+      opacity: 0.7;
     }
 
     .btn-reset {
@@ -342,7 +344,8 @@
         font-size: 11px;
       }
 
-      .form-control {
+      .form-control,
+      .form-select {
         min-height: 44px;
         border-radius: 12px;
         font-size: 13px;
@@ -363,7 +366,7 @@
       }
 
       .chart-shell {
-        height: 310px;
+        height: 320px;
       }
 
       .meta-pill {
@@ -414,24 +417,27 @@
         <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
           <div class="filter-field">
             <label class="field-label" for="rsm">RSM</label>
-            <input list="rsmList" id="rsm" class="form-control" placeholder="Select RSM">
-            <datalist id="rsmList"></datalist>
+            <select id="rsm" class="form-select">
+              <option value="">All RSM</option>
+            </select>
           </div>
         </div>
 
         <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
           <div class="filter-field">
             <label class="field-label" for="asm">ASM</label>
-            <input list="asmList" id="asm" class="form-control" placeholder="Select ASM">
-            <datalist id="asmList"></datalist>
+            <select id="asm" class="form-select">
+              <option value="">All ASM</option>
+            </select>
           </div>
         </div>
 
         <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
           <div class="filter-field">
             <label class="field-label" for="so">SO</label>
-            <input list="soList" id="so" class="form-control" placeholder="Select SO">
-            <datalist id="soList"></datalist>
+            <select id="so" class="form-select">
+              <option value="">All SO</option>
+            </select>
           </div>
         </div>
 
@@ -539,19 +545,6 @@
       return parseFloat(val.toString().replace(/,/g, "")) || 0;
     }
 
-    fetch(API)
-      .then(res => res.json())
-      .then(data => {
-        dataAll = data.map(r => ({
-          ...r,
-          date: parseDate(r["Month"])
-        })).filter(r => r.date);
-
-        initFilters();
-        setDefault();
-        updateCharts();
-      });
-
     function parseDate(val) {
       const [m, y] = val.split("-");
       const map = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
@@ -566,63 +559,15 @@
       return window.innerWidth < 768;
     }
 
-    function isFilterPanelCollapsed() {
-      return document.querySelector(".filter-panel")?.classList.contains("collapsed");
+    function uniq(arr) {
+      return [...new Set(arr)].filter(Boolean);
     }
 
-    function syncFilterToggle() {
-      const toggle = document.getElementById("filterToggle");
-      const panel = document.querySelector(".filter-panel");
-      if (!toggle || !panel) return;
-
-      if (!isMobileView()) {
-        panel.classList.remove("collapsed");
-        toggle.querySelector("span").textContent = "Filters";
-        toggle.querySelector(".toggle-icon").textContent = "-";
-        return;
-      }
-
-      const collapsed = isFilterPanelCollapsed();
-      toggle.querySelector("span").textContent = collapsed ? "Show Filters" : "Hide Filters";
-      toggle.querySelector(".toggle-icon").textContent = collapsed ? "+" : "-";
-    }
-
-    function toggleFilters() {
-      const panel = document.querySelector(".filter-panel");
-      if (!panel || !isMobileView()) return;
-      panel.classList.toggle("collapsed");
-      syncFilterToggle();
-    }
-
-    function initFilters() {
-      fill("rsm", uniq(dataAll.map(r => r["Current RSM"])));
-
-      rsm.oninput = () => { cascadeASM(); updateCharts(); };
-      asm.oninput = () => { cascadeSO(); updateCharts(); };
-      so.oninput = updateCharts;
-      monthFrom.onchange = updateCharts;
-      monthTo.onchange = updateCharts;
-    }
-
-    function fill(id, arr) {
-      document.getElementById(id + "List").innerHTML = arr.map(v => `<option value="${v}">`).join("");
-    }
-
-    function uniq(a) {
-      return [...new Set(a)].filter(Boolean);
-    }
-
-    function cascadeASM() {
-      let f = dataAll.filter(r => r["Current RSM"] == rsm.value);
-      fill("asm", uniq(f.map(r => r["Current ASM"])));
-      asm.value = "";
-      so.value = "";
-    }
-
-    function cascadeSO() {
-      let f = dataAll.filter(r => r["Current ASM"] == asm.value);
-      fill("so", uniq(f.map(r => r["SO"])));
-      so.value = "";
+    function fillSelect(id, arr, label) {
+      const el = document.getElementById(id);
+      const current = el.value;
+      el.innerHTML = `<option value="">All ${label}</option>` + arr.map(v => `<option value="${v}">${v}</option>`).join("");
+      if (arr.includes(current)) el.value = current;
     }
 
     function setDefault() {
@@ -707,9 +652,80 @@
       document.getElementById("heroScope").textContent = scope;
     }
 
+    function isFilterPanelCollapsed() {
+      return document.querySelector(".filter-panel")?.classList.contains("collapsed");
+    }
+
+    function syncFilterToggle() {
+      const toggle = document.getElementById("filterToggle");
+      const panel = document.querySelector(".filter-panel");
+      if (!toggle || !panel) return;
+
+      const label = toggle.querySelector(".toggle-text");
+      const icon = toggle.querySelector(".toggle-icon");
+
+      if (!isMobileView()) {
+        panel.classList.remove("collapsed");
+        label.textContent = "Filters";
+        icon.textContent = "-";
+        return;
+      }
+
+      const collapsed = isFilterPanelCollapsed();
+      label.textContent = collapsed ? "Show Filters" : "Hide Filters";
+      icon.textContent = collapsed ? "+" : "-";
+    }
+
+    function toggleFilters() {
+      const panel = document.querySelector(".filter-panel");
+      if (!panel || !isMobileView()) return;
+      panel.classList.toggle("collapsed");
+      syncFilterToggle();
+    }
+
+    function cascadeASM() {
+      let filtered = dataAll.filter(r => !rsm.value || r["Current RSM"] == rsm.value);
+      fillSelect("asm", uniq(filtered.map(r => r["Current ASM"])), "ASM");
+      fillSelect("so", [], "SO");
+      asm.value = "";
+      so.value = "";
+    }
+
+    function cascadeSO() {
+      let filtered = dataAll.filter(r =>
+        (!rsm.value || r["Current RSM"] == rsm.value) &&
+        (!asm.value || r["Current ASM"] == asm.value)
+      );
+      fillSelect("so", uniq(filtered.map(r => r["SO"])), "SO");
+      so.value = "";
+    }
+
+    function initFilters() {
+      fillSelect("rsm", uniq(dataAll.map(r => r["Current RSM"])), "RSM");
+      fillSelect("asm", [], "ASM");
+      fillSelect("so", [], "SO");
+
+      rsm.onchange = () => { cascadeASM(); updateCharts(); };
+      asm.onchange = () => { cascadeSO(); updateCharts(); };
+      so.onchange = updateCharts;
+      monthFrom.onchange = updateCharts;
+      monthTo.onchange = updateCharts;
+    }
+
+    function labelFormatter(value, isPercent, chartData, index, mobile) {
+      const total = chartData.length;
+
+      if (mobile) {
+        if (total > 10 && index % 3 !== 0 && index !== total - 1) return null;
+        if (total > 6 && total <= 10 && index % 2 !== 0 && index !== total - 1) return null;
+      }
+
+      return isPercent ? value + "%" : value.toLocaleString("en-IN");
+    }
+
     function draw(id, label, key, isPercent = false) {
       let data = aggregate(getData());
-      const mobile = isMobileView();
+      let mobile = isMobileView();
 
       if (charts[id]) charts[id].destroy();
 
@@ -734,14 +750,15 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          animation: false,
           interaction: {
             mode: "index",
             intersect: false
           },
           layout: {
             padding: {
-              top: mobile ? 28 : 12,
-              right: mobile ? 8 : 10,
+              top: mobile ? 34 : 12,
+              right: mobile ? 10 : 10,
               left: mobile ? 4 : 6,
               bottom: 0
             }
@@ -763,7 +780,7 @@
             },
             y: {
               beginAtZero: true,
-              grace: mobile ? "18%" : "12%",
+              grace: mobile ? "22%" : "12%",
               grid: {
                 color: "rgba(154, 174, 194, 0.18)",
                 drawBorder: false
@@ -810,9 +827,15 @@
             },
             datalabels: {
               display: true,
-              align: mobile ? "top" : "top",
               anchor: "end",
-              offset: mobile ? 6 : 4,
+              align: function(context) {
+                if (!mobile) return "top";
+                return context.dataIndex % 2 === 0 ? "top" : "right";
+              },
+              offset: function(context) {
+                if (!mobile) return 4;
+                return context.dataIndex % 2 === 0 ? 6 : 8;
+              },
               clamp: true,
               clip: false,
               color: mobile ? "#ffffff" : "#334e68",
@@ -823,14 +846,8 @@
                 weight: "700",
                 size: mobile ? 8 : 10
               },
-              formatter: (v, context) => {
-                if (mobile) {
-                  const lastIndex = context.dataset.data.length - 1;
-                  if (context.dataIndex !== 0 && context.dataIndex !== lastIndex && context.dataIndex % 2 !== 0) {
-                    return "";
-                  }
-                }
-                return isPercent ? v + "%" : v.toLocaleString("en-IN");
+              formatter: function(v, context) {
+                return labelFormatter(v, isPercent, context.dataset.data, context.dataIndex, mobile);
               }
             }
           }
@@ -857,11 +874,24 @@
       rsm.value = "";
       asm.value = "";
       so.value = "";
-      fill("asm", []);
-      fill("so", []);
+      fillSelect("asm", [], "ASM");
+      fillSelect("so", [], "SO");
       setDefault();
       updateCharts();
     }
+
+    fetch(API)
+      .then(res => res.json())
+      .then(data => {
+        dataAll = data.map(r => ({
+          ...r,
+          date: parseDate(r["Month"])
+        })).filter(r => r.date);
+
+        initFilters();
+        setDefault();
+        updateCharts();
+      });
 
     window.addEventListener("resize", () => {
       clearTimeout(window.__chartResizeTimer);
@@ -870,6 +900,11 @@
     });
 
     document.addEventListener("DOMContentLoaded", () => {
+      const toggle = document.getElementById("filterToggle");
+      if (toggle) {
+        toggle.innerHTML = '<span class="toggle-text">Show Filters</span><span class="toggle-icon">+</span>';
+      }
+
       if (isMobileView()) {
         document.querySelector(".filter-panel")?.classList.add("collapsed");
       }
