@@ -122,6 +122,10 @@
       margin-bottom: 18px;
     }
 
+    .filter-toolbar {
+      display: none;
+    }
+
     .panel-head {
       margin-bottom: 16px;
     }
@@ -144,6 +148,10 @@
       row-gap: 14px;
     }
 
+    .filter-field {
+      position: relative;
+    }
+
     .field-label {
       display: block;
       margin-bottom: 8px;
@@ -162,6 +170,10 @@
       color: var(--title);
       font-size: 14px;
       box-shadow: none;
+    }
+
+    .form-control::-webkit-calendar-picker-indicator {
+      opacity: 0.7;
     }
 
     .form-control:focus {
@@ -277,6 +289,70 @@
         padding: 16px;
       }
 
+      .filter-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .filter-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 42px;
+        padding: 0 14px;
+        border: 1px solid rgba(31, 78, 121, 0.18);
+        border-radius: 12px;
+        background: #f6f9fc;
+        color: var(--navy);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .filter-toggle .toggle-icon {
+        font-size: 16px;
+        line-height: 1;
+      }
+
+      .filter-panel.collapsed .panel-head,
+      .filter-panel.collapsed .filters-grid {
+        display: none;
+      }
+
+      .panel-head {
+        margin-bottom: 12px;
+      }
+
+      .filters-grid {
+        row-gap: 12px;
+      }
+
+      .filter-field {
+        padding: 10px 12px 12px;
+        border: 1px solid rgba(216, 226, 236, 0.9);
+        border-radius: 14px;
+        background: #f9fbfd;
+      }
+
+      .field-label {
+        margin-bottom: 6px;
+        font-size: 11px;
+      }
+
+      .form-control {
+        min-height: 44px;
+        border-radius: 12px;
+        font-size: 13px;
+      }
+
+      .btn-reset {
+        min-height: 44px;
+        border-radius: 12px;
+      }
+
       .chart-section-head {
         flex-direction: column;
         align-items: flex-start;
@@ -287,7 +363,7 @@
       }
 
       .chart-shell {
-        height: 260px;
+        height: 310px;
       }
 
       .meta-pill {
@@ -321,6 +397,14 @@
     </section>
 
     <section class="panel filter-panel">
+      <div class="filter-toolbar">
+        <strong class="panel-title">Filters</strong>
+        <button id="filterToggle" class="filter-toggle" type="button" onclick="toggleFilters()">
+          <span>Show Filters</span>
+          <span class="toggle-icon">+</span>
+        </button>
+      </div>
+
       <div class="panel-head">
         <h2 class="panel-title">Filters</h2>
         <p class="panel-subtitle">Select hierarchy and month range</p>
@@ -328,36 +412,48 @@
 
       <div class="row filters-grid">
         <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
-          <label class="field-label" for="rsm">RSM</label>
-          <input list="rsmList" id="rsm" class="form-control" placeholder="Select RSM">
-          <datalist id="rsmList"></datalist>
+          <div class="filter-field">
+            <label class="field-label" for="rsm">RSM</label>
+            <input list="rsmList" id="rsm" class="form-control" placeholder="Select RSM">
+            <datalist id="rsmList"></datalist>
+          </div>
         </div>
 
         <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
-          <label class="field-label" for="asm">ASM</label>
-          <input list="asmList" id="asm" class="form-control" placeholder="Select ASM">
-          <datalist id="asmList"></datalist>
+          <div class="filter-field">
+            <label class="field-label" for="asm">ASM</label>
+            <input list="asmList" id="asm" class="form-control" placeholder="Select ASM">
+            <datalist id="asmList"></datalist>
+          </div>
         </div>
 
         <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
-          <label class="field-label" for="so">SO</label>
-          <input list="soList" id="so" class="form-control" placeholder="Select SO">
-          <datalist id="soList"></datalist>
+          <div class="filter-field">
+            <label class="field-label" for="so">SO</label>
+            <input list="soList" id="so" class="form-control" placeholder="Select SO">
+            <datalist id="soList"></datalist>
+          </div>
         </div>
 
         <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
-          <label class="field-label" for="monthFrom">From</label>
-          <input type="month" id="monthFrom" class="form-control">
+          <div class="filter-field">
+            <label class="field-label" for="monthFrom">From</label>
+            <input type="month" id="monthFrom" class="form-control">
+          </div>
         </div>
 
         <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
-          <label class="field-label" for="monthTo">To</label>
-          <input type="month" id="monthTo" class="form-control">
+          <div class="filter-field">
+            <label class="field-label" for="monthTo">To</label>
+            <input type="month" id="monthTo" class="form-control">
+          </div>
         </div>
 
         <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
-          <label class="field-label d-block">&nbsp;</label>
-          <button class="btn btn-reset w-100" type="button" onclick="clearFilters()">Reset Filters</button>
+          <div class="filter-field">
+            <label class="field-label d-block">&nbsp;</label>
+            <button class="btn btn-reset w-100" type="button" onclick="clearFilters()">Reset Filters</button>
+          </div>
         </div>
       </div>
     </section>
@@ -466,6 +562,38 @@
       return d.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
     }
 
+    function isMobileView() {
+      return window.innerWidth < 768;
+    }
+
+    function isFilterPanelCollapsed() {
+      return document.querySelector(".filter-panel")?.classList.contains("collapsed");
+    }
+
+    function syncFilterToggle() {
+      const toggle = document.getElementById("filterToggle");
+      const panel = document.querySelector(".filter-panel");
+      if (!toggle || !panel) return;
+
+      if (!isMobileView()) {
+        panel.classList.remove("collapsed");
+        toggle.querySelector("span").textContent = "Filters";
+        toggle.querySelector(".toggle-icon").textContent = "-";
+        return;
+      }
+
+      const collapsed = isFilterPanelCollapsed();
+      toggle.querySelector("span").textContent = collapsed ? "Show Filters" : "Hide Filters";
+      toggle.querySelector(".toggle-icon").textContent = collapsed ? "+" : "-";
+    }
+
+    function toggleFilters() {
+      const panel = document.querySelector(".filter-panel");
+      if (!panel || !isMobileView()) return;
+      panel.classList.toggle("collapsed");
+      syncFilterToggle();
+    }
+
     function initFilters() {
       fill("rsm", uniq(dataAll.map(r => r["Current RSM"])));
 
@@ -562,7 +690,7 @@
         ubop: x.ols ? Math.round((x.ubo / x.ols) * 100) : 0,
         secval: x.secval,
         secvol: x.secvol,
-       lpc: x.PC ? parseFloat((x.tlsd / x.PC).toFixed(1)) : 0
+        lpc: x.PC ? parseFloat((x.tlsd / x.PC).toFixed(1)) : 0
       }));
     }
 
@@ -581,6 +709,7 @@
 
     function draw(id, label, key, isPercent = false) {
       let data = aggregate(getData());
+      const mobile = isMobileView();
 
       if (charts[id]) charts[id].destroy();
 
@@ -595,8 +724,8 @@
             fill: true,
             tension: 0.38,
             borderWidth: 3,
-            pointRadius: window.innerWidth < 768 ? 2.5 : 4,
-            pointHoverRadius: window.innerWidth < 768 ? 4 : 6,
+            pointRadius: mobile ? 2.5 : 4,
+            pointHoverRadius: mobile ? 4 : 6,
             pointBackgroundColor: colors[id],
             pointBorderColor: "#ffffff",
             pointBorderWidth: 2
@@ -611,9 +740,9 @@
           },
           layout: {
             padding: {
-              top: 8,
-              right: window.innerWidth < 768 ? 4 : 10,
-              left: window.innerWidth < 768 ? 2 : 6,
+              top: mobile ? 28 : 12,
+              right: mobile ? 8 : 10,
+              left: mobile ? 4 : 6,
               bottom: 0
             }
           },
@@ -625,7 +754,7 @@
               ticks: {
                 color: "#68809b",
                 font: {
-                  size: window.innerWidth < 768 ? 10 : 11,
+                  size: mobile ? 10 : 11,
                   weight: "600"
                 },
                 maxRotation: 0,
@@ -634,6 +763,7 @@
             },
             y: {
               beginAtZero: true,
+              grace: mobile ? "18%" : "12%",
               grid: {
                 color: "rgba(154, 174, 194, 0.18)",
                 drawBorder: false
@@ -641,7 +771,7 @@
               ticks: {
                 color: "#68809b",
                 font: {
-                  size: window.innerWidth < 768 ? 10 : 11,
+                  size: mobile ? 10 : 11,
                   weight: "600"
                 },
                 callback: value => isPercent ? value + "%" : value.toLocaleString("en-IN")
@@ -662,7 +792,7 @@
                 bottom: 16
               },
               font: {
-                size: window.innerWidth < 768 ? 13 : 15,
+                size: mobile ? 13 : 15,
                 weight: "700",
                 family: "Manrope"
               }
@@ -680,15 +810,28 @@
             },
             datalabels: {
               display: true,
-              align: "top",
+              align: mobile ? "top" : "top",
               anchor: "end",
-              offset: 4,
-              color: "#334e68",
+              offset: mobile ? 6 : 4,
+              clamp: true,
+              clip: false,
+              color: mobile ? "#ffffff" : "#334e68",
+              backgroundColor: mobile ? "rgba(17, 38, 60, 0.88)" : null,
+              borderRadius: mobile ? 6 : 0,
+              padding: mobile ? { top: 3, right: 5, bottom: 3, left: 5 } : 0,
               font: {
                 weight: "700",
-                size: window.innerWidth < 768 ? 9 : 10
+                size: mobile ? 8 : 10
               },
-              formatter: v => isPercent ? v + "%" : v.toLocaleString("en-IN")
+              formatter: (v, context) => {
+                if (mobile) {
+                  const lastIndex = context.dataset.data.length - 1;
+                  if (context.dataIndex !== 0 && context.dataIndex !== lastIndex && context.dataIndex % 2 !== 0) {
+                    return "";
+                  }
+                }
+                return isPercent ? v + "%" : v.toLocaleString("en-IN");
+              }
             }
           }
         },
@@ -722,7 +865,15 @@
 
     window.addEventListener("resize", () => {
       clearTimeout(window.__chartResizeTimer);
+      syncFilterToggle();
       window.__chartResizeTimer = setTimeout(updateCharts, 180);
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      if (isMobileView()) {
+        document.querySelector(".filter-panel")?.classList.add("collapsed");
+      }
+      syncFilterToggle();
     });
   </script>
 </body>
