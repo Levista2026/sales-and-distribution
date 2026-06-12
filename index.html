@@ -1,75 +1,12 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>S&D Dashboard</title>
-  <link rel="stylesheet" href="./styles.css" />
-</head>
-<body>
-  <main class="page">
-    <header class="hero">
-      <div>
-        <h1>S&D Dashboard</h1>
-        <p>Monthly performance trends from Supabase data</p>
-      </div>
-      <div class="hero-actions">
-        <input id="tableName" type="text" value="S&D" />
-      </div>
-    </header>
-
-    <section class="panel filters-panel">
-      <div class="filter-head">
-        <h2>Filters</h2>
-        <button id="clearFiltersBtn" class="ghost-btn" type="button">Clear Filters</button>
-      </div>
-      <p class="filter-note">Use dropdowns to filter charts instantly.</p>
-      <div class="filters">
-        <div class="field">
-          <label for="rsmFilter">Current RSM</label>
-          <input id="rsmFilter" list="rsmFilterList" class="filter-search" placeholder="All RSM" />
-          <datalist id="rsmFilterList"></datalist>
-        </div>
-        <div class="field">
-          <label for="asmFilter">Current ASM</label>
-          <input id="asmFilter" list="asmFilterList" class="filter-search" placeholder="All ASM" />
-          <datalist id="asmFilterList"></datalist>
-        </div>
-        <div class="field">
-          <label for="userFilter">SO</label>
-          <input id="userFilter" list="userFilterList" class="filter-search" placeholder="All SO" />
-          <datalist id="userFilterList"></datalist>
-        </div>
-        <div class="field">
-          <label for="monthFromFilter">From Month</label>
-          <input id="monthFromFilter" list="monthFromFilterList" class="filter-search" placeholder="From (All)" />
-          <datalist id="monthFromFilterList"></datalist>
-        </div>
-        <div class="field">
-          <label for="monthToFilter">To Month</label>
-          <input id="monthToFilter" list="monthToFilterList" class="filter-search" placeholder="To (All)" />
-          <datalist id="monthToFilterList"></datalist>
-        </div>
-      </div>
-      <p id="status" class="status">Initializing...</p>
-    </section>
-
-    <section class="charts">
-      <article class="panel chart-card"><h3>No of Ols</h3><canvas id="chart-no-ols"></canvas></article>
-      <article class="panel chart-card"><h3>TC</h3><canvas id="chart-tc"></canvas></article>
-      <article class="panel chart-card"><h3>PC</h3><canvas id="chart-pc"></canvas></article>
-      <article class="panel chart-card"><h3>%</h3><canvas id="chart-percent"></canvas></article>
-      <article class="panel chart-card"><h3>UBO</h3><canvas id="chart-ubo"></canvas></article>
-      <article class="panel chart-card"><h3>UBO %</h3><canvas id="chart-ubo-percent"></canvas></article>
-      <article class="panel chart-card"><h3>LPC</h3><canvas id="chart-lpc"></canvas></article>
-      <article class="panel chart-card"><h3>Sec Value</h3><canvas id="chart-sec-value"></canvas></article>
-      <article class="panel chart-card"><h3>Sec Volume</h3><canvas id="chart-sec-volume"></canvas></article>
-    </section>
-  </main>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-  <script src="./app.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>S&D Dashboard</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
